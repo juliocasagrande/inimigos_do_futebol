@@ -1,0 +1,86 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+#sidebar {
+  width: 250px;
+  min-width: 220px;
+  max-width: 250px;
+  min-height: 100vh;
+  flex-shrink: 0;
+  background-color: #d5004e;
+  transition: left 0.3s ease;
+}
+
+#main-content {
+  flex: 1;
+  overflow-x: auto;
+  padding: 2rem;
+}
+
+.d-flex {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.card {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  margin-bottom: 1.5rem;
+}
+
+canvas {
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* ======== MOBILE ADAPTATION ======== */
+@media (max-width: 768px) {
+  #sidebar {
+    position: absolute;
+    left: -250px;
+    z-index: 1000;
+  }
+
+  #sidebar.open {
+    left: 0;
+  }
+
+  #main-content {
+    padding: 1rem;
+    width: 100%;
+  }
+
+  #toggle-sidebar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1100;
+  }
+
+  nav#sidebar h4 {
+    font-size: 1rem;
+  }
+
+  nav#sidebar .nav-link {
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+}
+
+.radar-canvas {
+  width: 100%;
+  max-width: 220px;
+  margin: auto;
+  display: block;
+}
+
+canvas.radar-canvas {
+  max-width: 180px;
+  margin: 0 auto;
+  display: block;
+}

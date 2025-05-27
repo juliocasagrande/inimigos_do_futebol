@@ -22,13 +22,11 @@ function renderizarJogadores(dados) {
     const col = document.createElement("div");
     col.className = "col-md-4 mb-4";
     col.innerHTML = `
-      <div class="card shadow-lg p-3">
+      <div class="card shadow-lg p-3 card-gradiente">
         <div class="text-center position-relative">
           <img src="images/${jogador.Nome.toLowerCase()}.png"
-          onerror="this.src='https://via.placeholder.com/90'"
-          class="rounded-circle mb-2"
-          width="90"
-          height="97">
+          onerror="this.src='https://via.placeholder.com/80'"
+          class="mb-2 jogador-foto">
           <div class="media-label position-absolute top-0 end-0 bg-success text-white rounded-pill px-2 py-1" style="font-size: 0.75rem;">
             ${mediaHabilidades}
           </div>

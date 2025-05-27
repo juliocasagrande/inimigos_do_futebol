@@ -9,18 +9,22 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 </head>
 <body>
-  <button class="btn btn-dark d-md-none m-2" onclick="toggleSidebar()">☰ Menu</button>
+  <!-- Botão do menu hamburguer -->
+  <button id="toggle-sidebar" class="btn btn-dark d-md-none m-2">
+    ☰ Menu
+  </button>  
+
   <div class="d-flex">
-    <nav class="bg-dark text-white p-3" id="sidebar">
-      <h4>Peladinha</h4>
-      <h5>Inimigos do Futebol</h5>
-      <hr>
+    <nav id="sidebar">
+      <h4 style="margin-left: 10px; margin-top: 20px; font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif; color: aliceblue;">Peladinha</h4>
+      <h5 style="margin-left: 10px; font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif; color: aliceblue;">Inimigos do Futebol</h5>
+      <hr style="color: aliceblue;">
       <ul class="nav flex-column mt-4">
         <!-- <li class="nav-item"><a class="nav-link text-white" href="index.html">💸 Gastos</a></li> -->
         <li class="nav-item"><a class="nav-link text-white" href="index.html">📊 Estatísticas</a></li>
-        <li class="nav-item"><a class="nav-link text-white" href="habilidades.html">🧠 Habilidades</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="habilidades.html">📶 Gráfico FIFA</a></li>
       </ul>
-    </nav> 
+    </nav>   
 
     <div class="p-4" id="main-content">
       <h2>Radar de Habilidades dos Jogadores</h2>

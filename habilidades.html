@@ -47,6 +47,7 @@
     function toggleSidebar() {
       const sidebar = document.getElementById("sidebar");
       sidebar.classList.toggle("open");
+      document.getElementById("toggle-sidebar").addEventListener("click", toggleSidebar);
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

@@ -33,141 +33,145 @@ async function carregarJogadores() {
     .slice(0, 2);
 
   am5.ready(function () {
-    // ================= GRÁFICO 1 =================
-    const root1 = am5.Root.new("graficoAssiduos");
-    root1.setThemes([am5themes_Animated.new(root1)]);
+// ================= GRÁFICO 1 =================
+const root1 = am5.Root.new("graficoAssiduos");
+root1.setThemes([am5themes_Animated.new(root1)]);
 
-    const chart1 = root1.container.children.push(am5xy.XYChart.new(root1, {
-      panX: false,
-      panY: false,
-      wheelX: "none",
-      wheelY: "none",
-      paddingTop: 65,
-      paddingBottom: 20,
-      paddingLeft: 20,
-      paddingRight: 20
-    }));
+const chart1 = root1.container.children.push(am5xy.XYChart.new(root1, {
+  panX: false,
+  panY: false,
+  wheelX: "none",
+  wheelY: "none",
+  paddingTop: 65,
+  paddingBottom: 20,
+  paddingLeft: 20,
+  paddingRight: 20
+}));
 
-    chart1.children.unshift(am5.Label.new(root1, {
-      text: "📅 Mais fominhas",
-      fontSize: 20,
-      fontWeight: "600",
-      x: 0,
-      centerX: am5.left,
-      y: 0,
-      centerY: am5.top,
-      paddingTop: 10,
-      paddingLeft: 10,
-      fill: am5.color(0x333333)
-    }));
+chart1.children.unshift(am5.Label.new(root1, {
+  text: "📅 Mais fominhas",
+  fontSize: 20,
+  fontWeight: "600",
+  x: 0,
+  centerX: am5.left,
+  y: 0,
+  centerY: am5.top,
+  paddingTop: 10,
+  paddingLeft: 10,
+  fill: am5.color(0x333333)
+}));
 
-    const xAxis1 = chart1.xAxes.push(am5xy.CategoryAxis.new(root1, {
-      categoryField: "name",
-      renderer: am5xy.AxisRendererX.new(root1, {
-        minGridDistance: 30
-      })
-    }));
-    xAxis1.get("renderer").grid.template.set("visible", false);
-    xAxis1.get("renderer").labels.template.setAll({
-      dy: 0,
-      paddingTop: 40,
+const xAxis1 = chart1.xAxes.push(am5xy.CategoryAxis.new(root1, {
+  categoryField: "name",
+  renderer: am5xy.AxisRendererX.new(root1, {
+    minGridDistance: 30
+  })
+}));
+xAxis1.get("renderer").grid.template.set("visible", false);
+xAxis1.get("renderer").labels.template.setAll({
+  dy: 0,
+  paddingTop: 40,
+  fontSize: 14,
+  fill: am5.color(0x000000)
+});
+
+const yAxis1 = chart1.yAxes.push(am5xy.ValueAxis.new(root1, {
+  min: 0,
+  renderer: am5xy.AxisRendererY.new(root1, {})
+}));
+yAxis1.get("renderer").grid.template.set("visible", false);
+yAxis1.set("visible", false);
+
+// 🎯 Folga no topo para não cortar os rótulos
+yAxis1.set("extraMax", 0.15);
+
+const series1 = chart1.series.push(am5xy.ColumnSeries.new(root1, {
+  name: "Presenças",
+  xAxis: xAxis1,
+  yAxis: yAxis1,
+  valueYField: "steps",
+  categoryXField: "name",
+  sequencedInterpolation: true,
+  calculateAggregates: true,
+  maskBullets: false, // garante que bullets/labels fora do plot não sejam cortados
+  tooltip: am5.Tooltip.new(root1, {
+    labelText: "{valueY}",
+    pointerOrientation: "vertical",
+    dy: -10
+  })
+}));
+
+series1.columns.template.setAll({
+  strokeOpacity: 0,
+  cornerRadiusTL: 10,
+  cornerRadiusTR: 10,
+  maxWidth: 50,
+  fillOpacity: 0.9
+});
+
+const cursor1 = chart1.set("cursor", am5xy.XYCursor.new(root1, {}));
+cursor1.lineX.set("visible", false);
+cursor1.lineY.set("visible", false);
+
+// Avatar (círculo + foto)
+const circleTemplate1 = am5.Template.new({});
+series1.bullets.push(function () {
+  const container = am5.Container.new(root1, {});
+  container.children.push(am5.Circle.new(root1, { radius: 34 }, circleTemplate1));
+  const mask = am5.Circle.new(root1, { radius: 27 });
+  container.children.push(mask);
+  const imageContainer = am5.Container.new(root1, { mask: mask });
+  imageContainer.children.push(am5.Picture.new(root1, {
+    templateField: "pictureSettings",
+    centerX: am5.p50, centerY: am5.p50, width: 45, height: 60
+  }));
+  container.children.push(imageContainer);
+  return am5.Bullet.new(root1, { locationY: 0, sprite: container });
+});
+
+// 💬 Rótulos de dados fixos ACIMA das barras
+// (substitui o bloco de labels anterior)
+series1.bullets.push(function () {
+  return am5.Bullet.new(root1, {
+    locationY: 1, // topo da coluna
+    sprite: am5.Label.new(root1, {
+      text: "{valueY}",
+      populateText: true,
       fontSize: 14,
-      fill: am5.color(0x000000)
-    });
+      fill: am5.color(0x000000),
+      centerX: am5.p50,
+      centerY: am5.bottom, // ancora pela parte de baixo no topo da barra
+      dy: -6               // sobe um pouco acima da barra
+      // opcional: fontWeight: "bold"
+    })
+  });
+});
 
-    const yAxis1 = chart1.yAxes.push(am5xy.ValueAxis.new(root1, {
-      min: 0,
-      renderer: am5xy.AxisRendererY.new(root1, {})
-    }));
-    yAxis1.get("renderer").grid.template.set("visible", false);
-    yAxis1.set("visible", false);
+series1.set("heatRules", [
+  {
+    target: series1.columns.template,
+    key: "fill",
+    dataField: "valueY",
+    min: am5.color(0xadd8e6),
+    max: am5.color(0x003366),
+    minOpacity: 0.4,
+    maxOpacity: 0.9
+  },
+  {
+    target: circleTemplate1,
+    key: "fill",
+    dataField: "valueY",
+    min: am5.color(0xadd8e6),
+    max: am5.color(0x003366),
+    minOpacity: 0.4,
+    maxOpacity: 0.9
+  }
+]);
 
-    const series1 = chart1.series.push(am5xy.ColumnSeries.new(root1, {
-      name: "Presenças",
-      xAxis: xAxis1,
-      yAxis: yAxis1,
-      valueYField: "steps",
-      categoryXField: "name",
-      sequencedInterpolation: true,
-      calculateAggregates: true,
-      maskBullets: false,
-      tooltip: am5.Tooltip.new(root1, {
-        labelText: "{valueY}",
-        pointerOrientation: "vertical",
-        dy: -10
-      })
-    }));
-
-    series1.columns.template.setAll({
-      strokeOpacity: 0,
-      cornerRadiusTL: 10,
-      cornerRadiusTR: 10,
-      maxWidth: 50,
-      fillOpacity: 0.9
-    });
-
-    const cursor1 = chart1.set("cursor", am5xy.XYCursor.new(root1, {}));
-    cursor1.lineX.set("visible", false);
-    cursor1.lineY.set("visible", false);
-
-    const circleTemplate1 = am5.Template.new({});
-    series1.bullets.push(function () {
-      const container = am5.Container.new(root1, {});
-      container.children.push(am5.Circle.new(root1, { radius: 34 }, circleTemplate1));
-      const mask = am5.Circle.new(root1, { radius: 27 });
-      container.children.push(mask);
-      const imageContainer = am5.Container.new(root1, { mask: mask });
-      imageContainer.children.push(am5.Picture.new(root1, {
-        templateField: "pictureSettings",
-        centerX: am5.p50, centerY: am5.p50, width: 45, height: 60
-      }));
-      container.children.push(imageContainer);
-      return am5.Bullet.new(root1, { locationY: 0, sprite: container });
-    });
-
-    // 💬 Adiciona labels visíveis
-    series1.bullets.push(function () {
-      return am5.Bullet.new(root1, {
-        locationY: 0,
-        sprite: am5.Label.new(root1, {
-          text: "{valueY}",
-          centerY: am5.p50,
-          centerX: am5.p50,
-          populateText: true,
-          fontSize: 14,
-          fill: am5.color(0x000000),
-          dy: -20
-        })
-      });
-    });
-
-    series1.set("heatRules", [
-      {
-        target: series1.columns.template,
-        key: "fill",
-        dataField: "valueY",
-        min: am5.color(0xadd8e6),
-        max: am5.color(0x003366),
-        minOpacity: 0.4,
-        maxOpacity: 0.9
-      },
-      {
-        target: circleTemplate1,
-        key: "fill",
-        dataField: "valueY",
-        min: am5.color(0xadd8e6),
-        max: am5.color(0x003366),
-        minOpacity: 0.4,
-        maxOpacity: 0.9
-      }
-    ]);
-
-    series1.data.setAll(dataPresencas);
-    xAxis1.data.setAll(dataPresencas);
-    series1.appear();
-    chart1.appear(1000, 100);
-
-
+series1.data.setAll(dataPresencas);
+xAxis1.data.setAll(dataPresencas);
+series1.appear();
+chart1.appear(1000, 100);
     // ================= GRÁFICO 2 =================
     const root2 = am5.Root.new("graficoGols");
     root2.setThemes([am5themes_Animated.new(root2)]);

@@ -38,7 +38,7 @@ async function carregarJogadores() {
     .sort((a, b) => b.steps - a.steps)
     .slice(0, 2);
 
-  am5.ready(function () {   
+  am5.ready(function () {
     // ====================================================
     // ================= GRÁFICO FOMINHAS =================
     // ====================================================
@@ -97,6 +97,7 @@ async function carregarJogadores() {
     );
     yAxis1.get("renderer").grid.template.set("visible", false);
     yAxis1.set("visible", false);
+    yAxis1.set("extraMax", 0.15); // folga para rótulos fora da barra
 
     const series1 = chart1.series.push(
       am5xy.ColumnSeries.new(root1, {
@@ -118,7 +119,6 @@ async function carregarJogadores() {
       maxWidth: 50,
       fillOpacity: 0.9,
     });
-
 
     const cursor1 = chart1.set("cursor", am5xy.XYCursor.new(root1, {}));
     cursor1.lineX.set("visible", false);
@@ -146,23 +146,22 @@ async function carregarJogadores() {
       return am5.Bullet.new(root1, { locationY: 0, sprite: container });
     });
 
-    // 💬 Adiciona labels visíveis
+    // Rótulos fixos fora da barra (negrito)
     series1.bullets.push(function () {
       return am5.Bullet.new(root1, {
-        locationY: 1, // topo da coluna
+        locationY: 1,
         sprite: am5.Label.new(root1, {
           text: "{valueY}",
           populateText: true,
           fontSize: 18,
-          fontWeight: "bold",     // negrito
+          fontWeight: "bold",
           fill: am5.color(0x000000),
           centerX: am5.p50,
-          centerY: am5.bottom,    // ancora pela base no topo da barra
-          dy: -35                 // mais alto, do lado de fora
-        })
+          centerY: am5.bottom,
+          dy: -35,
+        }),
       });
     });
-
 
     series1.set("heatRules", [
       {
@@ -191,7 +190,7 @@ async function carregarJogadores() {
     chart1.appear(1000, 100);
 
     // ====================================================
-    // ================= GRÁFICO ARTILHEIRO =================
+    // ================= GRÁFICO ARTILHEIROS ===============
     // ====================================================
     const root2 = am5.Root.new("graficoGols");
     root2.setThemes([am5themes_Animated.new(root2)]);
@@ -288,7 +287,7 @@ async function carregarJogadores() {
       return am5.Bullet.new(root2, { locationX: 0, sprite: container });
     });
 
-    // 💬 Adiciona labels visíveis
+    // Rótulos fixos à direita (negrito)
     series2.bullets.push(function () {
       return am5.Bullet.new(root2, {
         locationX: 1,
@@ -298,7 +297,7 @@ async function carregarJogadores() {
           centerX: am5.p50,
           populateText: true,
           fontSize: 20,
-          fontWeight: 'bold',
+          fontWeight: "bold",
           fill: am5.color(0x000000),
           dx: 30,
         }),
@@ -382,7 +381,6 @@ async function carregarJogadores() {
     yAxis3.set("visible", false);
     yAxis3.set("extraMax", 0.15); // folga no topo para o label fora da barra
 
-    // cria a série ANTES de usar bullets
     const series3 = chart3.series.push(
       am5xy.ColumnSeries.new(root3, {
         name: "Defesas Difíceis",
@@ -426,19 +424,19 @@ async function carregarJogadores() {
       return am5.Bullet.new(root3, { locationY: 0, sprite: container });
     });
 
-    // bullet do RÓTULO fora da barra (análogo ao artilheiros)
+    // bullet do RÓTULO fora da barra (negrito)
     series3.bullets.push(function () {
       return am5.Bullet.new(root3, {
-        locationY: 1, // topo da coluna
+        locationY: 1,
         sprite: am5.Label.new(root3, {
           text: "{valueY}",
           populateText: true,
           fontSize: 18,
-          fontWeight: 'bold',
+          fontWeight: "bold",
           fill: am5.color(0x000000),
           centerX: am5.p50,
-          centerY: am5.bottom, // ancora pela base no topo da barra
-          dy: -35,              // fica do lado de fora, acima
+          centerY: am5.bottom,
+          dy: -35,
         }),
       });
     });

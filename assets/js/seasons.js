@@ -22,7 +22,8 @@ export const SEASON_OPTIONS = [
 
 // ✅ URL correta para planilha publicada (gera CSV direto por gid)
 function csvUrl(gid) {
-  return `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_ID}/pub?gid=${gid}&output=csv`;
+  const base = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_ID}/pub?gid=${gid}&output=csv`;
+  return `https://api.allorigins.win/raw?url=${encodeURIComponent(base)}`;
 }
 
 // ==========================

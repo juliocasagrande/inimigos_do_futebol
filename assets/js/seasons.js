@@ -103,7 +103,7 @@ function parseCsv(text) {
 }
 
 async function fetchCsv(url) {
-  const res = await fetch(url, { cache: "no-store" });
+  const res = await fetch(url);
   if (!res.ok) throw new Error(`Falha ao baixar CSV: ${res.status}`);
   const text = await res.text();
 

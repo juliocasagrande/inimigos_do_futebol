@@ -880,10 +880,10 @@ function wireSearch() {
     const input = document.getElementById(inputId);
     if (!input || !listEl) continue;
     input.addEventListener("input", () => {
-      const q = input.value.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      const q = input.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       listEl.querySelectorAll("button").forEach((btn) => {
         const name = (btn.querySelector(".font-semibold")?.textContent || "")
-          .toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+          .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         btn.style.display = name.includes(q) ? "" : "none";
       });
     });

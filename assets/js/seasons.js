@@ -22,8 +22,26 @@ export const SEASON_OPTIONS = [
 
 // ✅ URL correta para planilha publicada (gera CSV direto por gid)
 function csvUrl(gid) {
-  const base = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_ID}/pub?gid=${gid}&output=csv`;
-  return `https://api.allorigins.win/raw?url=${encodeURIComponent(base)}`;
+  return `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_ID}/pub?gid=${gid}&output=csv`;
+}
+
+// Proxies CORS em ordem de preferência (usados como fallback se a URL direta falhar)
+const CORS_PROXIES = [
+  (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+];
+
+async function fetchText(url) {
+  const candidates = [url, ...CORS_PROXIES.map((fn) => fn(url))];
+  for (let i = 0; i < candidates.length; i++) {
+    try {
+      const res = await fetch(candidates[i]);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.text();
+    } catch (e) {
+      if (i === candidates.length - 1) throw new Error(`Falha ao baixar CSV: ${e.message}`);
+    }
+  }
 }
 
 // ==========================
@@ -104,9 +122,7 @@ function parseCsv(text) {
 }
 
 async function fetchCsv(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Falha ao baixar CSV: ${res.status}`);
-  const text = await res.text();
+  const text = await fetchText(url);
 
   const rows = parseCsv(text);
   if (!rows.length) return [];

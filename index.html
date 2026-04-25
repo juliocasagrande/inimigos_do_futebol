@@ -44,6 +44,14 @@
     </div>
   </header>
 
+  <!-- Error banner -->
+  <div id="errorBanner" class="hidden fixed top-16 left-0 right-0 z-40 px-4">
+    <div class="max-w-xl mx-auto bg-red-50 border border-red-200 text-red-800 text-sm rounded-2xl px-4 py-3 shadow-md flex items-start gap-2">
+      <span class="flex-1" id="errorMsg"></span>
+      <button onclick="document.getElementById('errorBanner').classList.add('hidden')" class="ml-2 text-red-500 font-bold leading-none">✕</button>
+    </div>
+  </div>
+
   <!-- Content -->
   <main class="max-w-xl mx-auto px-4 pt-4 pb-24">
 
@@ -60,6 +68,8 @@
           <div id="kpiPres" class="text-2xl font-bold mt-1">—</div>
         </div>
       </section>
+
+      <div id="highlights" class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 text-sm text-slate-700"></div>
 
       <!-- ORDEM: gols, muralhas, eficiência, presença -->
 

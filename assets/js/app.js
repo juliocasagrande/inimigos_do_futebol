@@ -89,8 +89,25 @@ function slugifyName(name) {
 }
 
 function playerImgSrc(name) {
-  return `images/${slugifyName(name)}.png`;
+  return new URL(`images/${slugifyName(name)}.png`, document.baseURI).href;
 }
+
+function playerFirstImgSrc(name) {
+  const first = normText(name).split(/\s+/)[0];
+  return new URL(`images/${slugifyName(first)}.png`, document.baseURI).href;
+}
+
+// Exposto globalmente para uso no onerror inline dos cards
+window.imgFallback = function (img) {
+  const fb = img.dataset.fallback;
+  if (fb && img.src !== fb) {
+    img.onerror = () => { img.onerror = null; img.style.visibility = "hidden"; };
+    img.src = fb;
+  } else {
+    img.onerror = null;
+    img.style.visibility = "hidden";
+  }
+};
 
 function rating(p) {
   const attrs = [p.Ritmo, p.Finalizacao, p.Passe, p.Drible, p.Defesa, p.Fisico].map((x) => Number(x) || 0);
@@ -210,6 +227,7 @@ function renderHome(players) {
 ======================= */
 function listRow(p, rank, mode) {
   const img = playerImgSrc(p.Nome);
+  const imgFb = playerFirstImgSrc(p.Nome);
 
   const rightLabel =
     mode === "gols" ? "Gols" : mode === "pres" ? "Pres" : "Rating";
@@ -219,16 +237,12 @@ function listRow(p, rank, mode) {
     mode === "pres" ? (p.Presencas || 0) :
     rating(p);
 
-  // linha de meta do card (compacta)
-  const meta =
-    mode === "players"
-      ? `Pos: <b>${p.Posicao || "—"}</b>`
-      : `Pos: <b>${p.Posicao || "—"}</b>`;
+  const meta = `Pos: <b>${p.Posicao || "—"}</b>`;
 
   return `
     <button class="w-full text-left bg-white rounded-2xl p-3 shadow-sm border border-slate-100 flex items-center gap-3" data-player="${encodeURIComponent(p.Nome)}">
       <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-700">${rank}</div>
-      <img src="${img}" onerror="this.style.display='none'" class="w-10 h-10 rounded-2xl bg-slate-100 object-cover border border-slate-200" alt="" />
+      <img src="${img}" data-fallback="${imgFb}" onerror="imgFallback(this)" class="w-10 h-10 rounded-2xl bg-slate-100 object-cover border border-slate-200 flex-shrink-0" alt="" />
       <div class="min-w-0 flex-1">
         <div class="font-semibold truncate">${p.Nome}</div>
         <div class="text-xs text-slate-500 mt-0.5">${meta}</div>
@@ -297,8 +311,8 @@ function renderPlayersPage(players) {
     })
     .join("");
 
-  const first = sorted[0];
-  if (first) selectPlayer(first.Nome);
+  const nameToSelect = (saved && sorted.some((p) => p.Nome === saved)) ? saved : sorted[0]?.Nome;
+  if (nameToSelect) selectPlayer(nameToSelect);
 }
 
 function selectPlayer(name) {
@@ -308,7 +322,12 @@ function selectPlayer(name) {
   localStorage.setItem("pelada:v2:selectedPlayer", name);
   if (elPlayerSelect) elPlayerSelect.value = encodeURIComponent(name);
 
-  if (elPlayerImg) elPlayerImg.src = playerImgSrc(p.Nome);
+  if (elPlayerImg) {
+    elPlayerImg.style.visibility = "";
+    elPlayerImg.dataset.fallback = playerFirstImgSrc(p.Nome);
+    elPlayerImg.onerror = () => window.imgFallback(elPlayerImg);
+    elPlayerImg.src = playerImgSrc(p.Nome);
+  }
   if (elPlayerName) elPlayerName.textContent = p.Nome;
 
   const isGK = isGoleiro(p);
@@ -810,6 +829,18 @@ function wireListClicks() {
 }
 
 /* =======================
+   ERROR BANNER
+======================= */
+function showError(msg) {
+  const banner = document.getElementById("errorBanner");
+  const msgEl = document.getElementById("errorMsg");
+  if (banner && msgEl) {
+    msgEl.textContent = msg;
+    banner.classList.remove("hidden");
+  }
+}
+
+/* =======================
    LOAD + REFRESH
 ======================= */
 async function refreshAll() {
@@ -833,7 +864,7 @@ async function refreshAll() {
   } catch (err) {
     console.error(err);
     if (elSubtitle) elSubtitle.textContent = "Erro ao carregar";
-    alert(`Não consegui carregar a planilha.\n\nDetalhe: ${String(err?.message || err)}`);
+    showError(`Não consegui carregar a planilha. ${String(err?.message || err)}`);
   }
 }
 

@@ -19,6 +19,7 @@ const elCountPres = document.getElementById("countPres");
 
 // Jogadores
 const elPlayerSelect = document.getElementById("playerSelect");
+const elCompareSelect = document.getElementById("compareSelect");
 const elPlayerImg = document.getElementById("playerImg");
 const elPlayerName = document.getElementById("playerName");
 const elPlayerMeta = document.getElementById("playerMeta");
@@ -101,13 +102,41 @@ function playerFirstImgSrc(name) {
 window.imgFallback = function (img) {
   const fb = img.dataset.fallback;
   if (fb && img.src !== fb) {
-    img.onerror = () => { img.onerror = null; img.style.visibility = "hidden"; };
+    img.onerror = () => { img.onerror = null; img.style.opacity = "0"; };
     img.src = fb;
   } else {
     img.onerror = null;
-    img.style.visibility = "hidden";
+    img.style.opacity = "0";
   }
 };
+
+const AVATAR_COLORS = ["bg-blue-500","bg-green-500","bg-red-500","bg-purple-500","bg-amber-500","bg-pink-500","bg-indigo-500","bg-orange-500","bg-teal-500","bg-cyan-500"];
+
+function avatarBg(name) {
+  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
+}
+
+function avatarInitials(name) {
+  return normText(name).split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+}
+
+function posBadge(pos) {
+  if (!pos) return '<span class="text-slate-400 text-xs">—</span>';
+  const colors = { GOL: "bg-green-100 text-green-700", ATA: "bg-red-100 text-red-700", MEI: "bg-yellow-100 text-yellow-800", ZAG: "bg-blue-100 text-blue-700", LAT: "bg-purple-100 text-purple-700" };
+  const cls = colors[pos] || "bg-slate-100 text-slate-600";
+  return `<span class="inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${cls}">${pos}</span>`;
+}
+
+function animateCounter(el, target, duration = 900) {
+  const start = performance.now();
+  const update = (now) => {
+    const t = Math.min((now - start) / duration, 1);
+    const eased = 1 - (1 - t) ** 3;
+    el.textContent = Math.round(eased * target);
+    if (t < 1) requestAnimationFrame(update);
+  };
+  requestAnimationFrame(update);
+}
 
 function rating(p) {
   const attrs = [p.Ritmo, p.Finalizacao, p.Passe, p.Drible, p.Defesa, p.Fisico].map((x) => Number(x) || 0);
@@ -203,8 +232,8 @@ function renderHome(players) {
   const totalGoals = players.reduce((s, p) => s + (p.Gols || 0), 0);
   const totalPres = players.reduce((s, p) => s + (p.Presencas || 0), 0);
 
-  if (elKpiGoals) elKpiGoals.textContent = String(totalGoals);
-  if (elKpiPres) elKpiPres.textContent = String(totalPres);
+  if (elKpiGoals) animateCounter(elKpiGoals, totalGoals);
+  if (elKpiPres) animateCounter(elKpiPres, totalPres);
 
   if (elHighlights) {
     const topScorer = [...players].filter((p) => !isGoleiro(p)).sort((a, b) => (b.Gols || 0) - (a.Gols || 0))[0];
@@ -228,26 +257,24 @@ function renderHome(players) {
 function listRow(p, rank, mode) {
   const img = playerImgSrc(p.Nome);
   const imgFb = playerFirstImgSrc(p.Nome);
+  const color = avatarBg(p.Nome);
+  const initials = avatarInitials(p.Nome);
 
-  const rightLabel =
-    mode === "gols" ? "Gols" : mode === "pres" ? "Pres" : "Rating";
-
-  const rightValue =
-    mode === "gols" ? (p.Gols || 0) :
-    mode === "pres" ? (p.Presencas || 0) :
-    rating(p);
-
-  const meta = `Pos: <b>${p.Posicao || "—"}</b>`;
+  const rightLabel = mode === "gols" ? "Gols" : mode === "pres" ? "Pres" : "Rating";
+  const rightValue = mode === "gols" ? (p.Gols || 0) : mode === "pres" ? (p.Presencas || 0) : rating(p);
 
   return `
     <button class="w-full text-left bg-white rounded-2xl p-3 shadow-sm border border-slate-100 flex items-center gap-3" data-player="${encodeURIComponent(p.Nome)}">
-      <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-700">${rank}</div>
-      <img src="${img}" data-fallback="${imgFb}" onerror="imgFallback(this)" class="w-10 h-10 rounded-2xl bg-slate-100 object-cover border border-slate-200 flex-shrink-0" alt="" />
+      <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-700 flex-shrink-0">${rank}</div>
+      <div class="relative w-10 h-10 rounded-2xl flex-shrink-0 ${color} flex items-center justify-center overflow-hidden">
+        <span class="text-white text-xs font-bold select-none">${initials}</span>
+        <img src="${img}" data-fallback="${imgFb}" onerror="imgFallback(this)" class="absolute inset-0 w-full h-full object-cover z-10" alt="" />
+      </div>
       <div class="min-w-0 flex-1">
         <div class="font-semibold truncate">${p.Nome}</div>
-        <div class="text-xs text-slate-500 mt-0.5">${meta}</div>
+        <div class="mt-0.5">${posBadge(p.Posicao)}</div>
       </div>
-      <div class="text-right">
+      <div class="text-right flex-shrink-0">
         <div class="text-[11px] text-slate-500">${rightLabel}</div>
         <div class="text-lg font-bold">${rightValue}</div>
       </div>
@@ -295,7 +322,12 @@ function renderPlayersPage(players) {
   if (!elPlayerSelect || !elListPlayers) return;
 
   const sorted = [...players].sort((a, b) => a.Nome.localeCompare(b.Nome, "pt-BR"));
-  elPlayerSelect.innerHTML = sorted.map((p) => `<option value="${encodeURIComponent(p.Nome)}">${p.Nome}</option>`).join("");
+  const opts = sorted.map((p) => `<option value="${encodeURIComponent(p.Nome)}">${p.Nome}</option>`).join("");
+  elPlayerSelect.innerHTML = opts;
+  if (elCompareSelect) {
+    elCompareSelect.innerHTML = `<option value="">— nenhum —</option>` + opts;
+    elCompareSelect.value = "";
+  }
 
   const saved = localStorage.getItem("pelada:v2:selectedPlayer");
   if (saved && sorted.some((p) => p.Nome === saved)) {
@@ -322,8 +354,13 @@ function selectPlayer(name) {
   localStorage.setItem("pelada:v2:selectedPlayer", name);
   if (elPlayerSelect) elPlayerSelect.value = encodeURIComponent(name);
 
+  const wrap = document.getElementById("playerImgWrap");
+  const initialsEl = document.getElementById("playerImgInitials");
+  if (wrap) wrap.className = `relative w-12 h-12 rounded-2xl flex-shrink-0 ${avatarBg(p.Nome)} flex items-center justify-center overflow-hidden border border-slate-200`;
+  if (initialsEl) initialsEl.textContent = avatarInitials(p.Nome);
+
   if (elPlayerImg) {
-    elPlayerImg.style.visibility = "";
+    elPlayerImg.style.opacity = "";
     elPlayerImg.dataset.fallback = playerFirstImgSrc(p.Nome);
     elPlayerImg.onerror = () => window.imgFallback(elPlayerImg);
     elPlayerImg.src = playerImgSrc(p.Nome);
@@ -331,7 +368,6 @@ function selectPlayer(name) {
   if (elPlayerName) elPlayerName.textContent = p.Nome;
 
   const isGK = isGoleiro(p);
-  // goleiro: gols = DD (na sua regra atual)
   const dd = p.Gols || 0;
 
   if (elPlayerMeta) {
@@ -340,9 +376,20 @@ function selectPlayer(name) {
       : `Pos: ${p.Posicao || "—"} • Pres: ${p.Presencas || 0} • Gols: ${p.Gols || 0} • Rating: ${rating(p)}`;
   }
 
-  // radar só faz sentido na aba jogadores e com container visível
+  const shareBtn = document.getElementById("shareBtn");
+  if (shareBtn) {
+    shareBtn.classList.toggle("hidden", !navigator.share);
+    shareBtn.onclick = () => navigator.share?.({
+      title: `${p.Nome} — Inimigos do Futebol`,
+      text: `${p.Nome} | Pos: ${p.Posicao || "—"} | Pres: ${p.Presencas} | ${isGK ? "DD" : "Gols"}: ${p.Gols || 0} | Rating: ${rating(p)}`,
+      url: location.href,
+    });
+  }
+
   if (currentPage === "jogadores") {
-    requestAnimationFrame(() => renderRadar(p));
+    const p2Name = elCompareSelect?.value ? decodeURIComponent(elCompareSelect.value) : null;
+    const p2 = p2Name ? currentPlayers.find((x) => x.Nome === p2Name) : null;
+    requestAnimationFrame(() => renderRadar(p, p2));
   }
 }
 
@@ -678,19 +725,22 @@ function renderScatter(players) {
 }
 
 /* ---------- RADAR ---------- */
-function renderRadar(p) {
+function radarCategories(p) {
+  return [
+    { category: “Ritmo”,      value: Number(p.Ritmo || 0) },
+    { category: “Finalização”,value: Number(p.Finalizacao || 0) },
+    { category: “Passe”,      value: Number(p.Passe || 0) },
+    { category: “Drible”,     value: Number(p.Drible || 0) },
+    { category: “Defesa”,     value: Number(p.Defesa || 0) },
+    { category: “Físico”,     value: Number(p.Fisico || 0) },
+  ];
+}
+
+function renderRadar(p, p2 = null) {
   const id = CHART_IDS.radar;
   if (!exists(id) || !isVisible(id)) return;
 
-  // goleiro pode ter atributos 0; ainda assim renderiza (fica “baixinho”)
-  const categories = [
-    { category: "Ritmo", value: Number(p.Ritmo || 0) },
-    { category: "Finalização", value: Number(p.Finalizacao || 0) },
-    { category: "Passe", value: Number(p.Passe || 0) },
-    { category: "Drible", value: Number(p.Drible || 0) },
-    { category: "Defesa", value: Number(p.Defesa || 0) },
-    { category: "Físico", value: Number(p.Fisico || 0) },
-  ];
+  const cats1 = radarCategories(p);
 
   let root;
   try {
@@ -698,53 +748,41 @@ function renderRadar(p) {
     root.setThemes([am5themes_Animated.new(root)]);
 
     const chart = root.container.children.push(
-      am5radar.RadarChart.new(root, {
-        panX: false,
-        panY: false,
-        wheelX: "none",
-        wheelY: "none",
-        innerRadius: am5.percent(20),
-      })
+      am5radar.RadarChart.new(root, { panX: false, panY: false, wheelX: “none”, wheelY: “none”, innerRadius: am5.percent(20) })
     );
 
     const xAxis = chart.xAxes.push(
-      am5radar.CategoryAxis.new(root, {
-        categoryField: "category",
-        renderer: am5radar.AxisRendererCircular.new(root, {}),
-      })
+      am5radar.CategoryAxis.new(root, { categoryField: “category”, renderer: am5radar.AxisRendererCircular.new(root, {}) })
     );
-    xAxis.data.setAll(categories);
+    xAxis.data.setAll(cats1);
 
     const yAxis = chart.yAxes.push(
-      am5radar.ValueAxis.new(root, {
-        min: 0,
-        max: 100,
-        strictMinMax: true,
-        renderer: am5radar.AxisRendererRadial.new(root, {}),
-      })
+      am5radar.ValueAxis.new(root, { min: 0, max: 100, strictMinMax: true, renderer: am5radar.AxisRendererRadial.new(root, {}) })
     );
 
-    const series = chart.series.push(
-      am5radar.RadarLineSeries.new(root, {
-        xAxis,
-        yAxis,
-        valueYField: "value",
-        categoryXField: "category",
-        strokeWidth: 2,
-        fillOpacity: 0.15,
-      })
-    );
-    series.data.setAll(categories);
+    function addSeries(cats, color, label) {
+      const s = chart.series.push(
+        am5radar.RadarLineSeries.new(root, {
+          xAxis, yAxis,
+          valueYField: “value”,
+          categoryXField: “category”,
+          strokeWidth: 2,
+          fillOpacity: 0.15,
+          stroke: am5.color(color),
+          fill: am5.color(color),
+          tooltip: am5.Tooltip.new(root, { labelText: `${label}: {valueY}` }),
+        })
+      );
+      s.data.setAll(cats);
+      s.bullets.push(() => am5.Bullet.new(root, { sprite: am5.Circle.new(root, { radius: 4, fillOpacity: 0.9, fill: am5.color(color) }) }));
+    }
 
-    series.bullets.push(() =>
-      am5.Bullet.new(root, {
-        sprite: am5.Circle.new(root, { radius: 4, fillOpacity: 0.9 }),
-      })
-    );
+    addSeries(cats1, 0x2563eb, p.Nome);
+    if (p2) addSeries(radarCategories(p2), 0xe11d48, p2.Nome);
 
     chart.appear(500, 40);
   } catch (e) {
-    console.error("Radar error:", e);
+    console.error(“Radar error:”, e);
     disposeChart(id);
     throw e;
   }
@@ -795,7 +833,9 @@ function renderPageCharts(page) {
     if (name) {
       selectPlayer(name);
       const pp = currentPlayers.find((x) => x.Nome === name);
-      if (pp) requestAnimationFrame(() => renderRadar(pp));
+      const p2Name = elCompareSelect?.value ? decodeURIComponent(elCompareSelect.value) : null;
+      const p2 = p2Name ? currentPlayers.find((x) => x.Nome === p2Name) : null;
+      if (pp) requestAnimationFrame(() => renderRadar(pp, p2));
     }
   }
 }
@@ -829,6 +869,55 @@ function wireListClicks() {
 }
 
 /* =======================
+   SEARCH
+======================= */
+function wireSearch() {
+  for (const [inputId, listEl] of [
+    ["searchGols", elListGols],
+    ["searchPres", elListPres],
+    ["searchPlayers", elListPlayers],
+  ]) {
+    const input = document.getElementById(inputId);
+    if (!input || !listEl) continue;
+    input.addEventListener("input", () => {
+      const q = input.value.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      listEl.querySelectorAll("button").forEach((btn) => {
+        const name = (btn.querySelector(".font-semibold")?.textContent || "")
+          .toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+        btn.style.display = name.includes(q) ? "" : "none";
+      });
+    });
+  }
+}
+
+/* =======================
+   SKELETON
+======================= */
+function skeletonCard() {
+  return `<div class="w-full bg-white rounded-2xl p-3 border border-slate-100 flex items-center gap-3 animate-pulse">
+    <div class="w-8 h-8 rounded-xl bg-slate-200 flex-shrink-0"></div>
+    <div class="w-10 h-10 rounded-2xl bg-slate-200 flex-shrink-0"></div>
+    <div class="flex-1 space-y-2 min-w-0">
+      <div class="h-4 bg-slate-200 rounded-lg" style="width:60%"></div>
+      <div class="h-3 bg-slate-200 rounded-full w-10"></div>
+    </div>
+    <div class="space-y-1 flex-shrink-0">
+      <div class="h-3 bg-slate-200 rounded-lg w-8"></div>
+      <div class="h-5 bg-slate-200 rounded-lg w-8"></div>
+    </div>
+  </div>`;
+}
+
+function showSkeletons() {
+  const html = Array(5).fill(skeletonCard()).join("");
+  if (elListGols) elListGols.innerHTML = html;
+  if (elListPres) elListPres.innerHTML = html;
+  if (elListPlayers) elListPlayers.innerHTML = html;
+  if (elKpiGoals) elKpiGoals.innerHTML = `<div class="h-7 w-14 bg-slate-200 rounded-lg animate-pulse mt-1"></div>`;
+  if (elKpiPres) elKpiPres.innerHTML = `<div class="h-7 w-14 bg-slate-200 rounded-lg animate-pulse mt-1"></div>`;
+}
+
+/* =======================
    ERROR BANNER
 ======================= */
 function showError(msg) {
@@ -847,6 +936,7 @@ async function refreshAll() {
   const optionValue = elSeason.value;
   localStorage.setItem("pelada:v2:selectedSeason", optionValue);
   if (elSubtitle) elSubtitle.textContent = "Carregando...";
+  showSkeletons();
 
   try {
     const playersRaw = await loadPlayers(optionValue);
@@ -893,9 +983,20 @@ if (elPlayerSelect) {
   });
 }
 
+if (elCompareSelect) {
+  elCompareSelect.addEventListener("change", () => {
+    const p1Name = elPlayerSelect ? decodeURIComponent(elPlayerSelect.value) : "";
+    const p1 = currentPlayers.find((x) => x.Nome === p1Name);
+    const p2Name = elCompareSelect.value ? decodeURIComponent(elCompareSelect.value) : null;
+    const p2 = p2Name ? currentPlayers.find((x) => x.Nome === p2Name) : null;
+    if (p1) requestAnimationFrame(() => renderRadar(p1, p2));
+  });
+}
+
 /* =======================
    INIT
 ======================= */
 setOptions();
 setActivePage(location.hash.replace("#", "") || "home");
+wireSearch();
 refreshAll();

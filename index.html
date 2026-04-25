@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Inimigos do Futebol - V2</title>
 
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
   <!-- Tailwind (sem build) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -106,6 +112,8 @@
           <h2 class="text-sm font-semibold text-slate-700">Lista completa (por gols)</h2>
           <div class="text-xs text-slate-500" id="countGols">—</div>
         </div>
+        <input id="searchGols" type="search" placeholder="Buscar jogador..."
+          class="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white mb-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
         <div id="listGols" class="space-y-2"></div>
       </section>
     </section>
@@ -122,6 +130,8 @@
           <h2 class="text-sm font-semibold text-slate-700">Lista completa (por presenças)</h2>
           <div class="text-xs text-slate-500" id="countPres">—</div>
         </div>
+        <input id="searchPres" type="search" placeholder="Buscar jogador..."
+          class="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white mb-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
         <div id="listPres" class="space-y-2"></div>
       </section>
     </section>
@@ -137,10 +147,27 @@
           <select id="playerSelect" class="text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white shadow-sm w-[190px]"></select>
         </div>
 
+        <!-- Comparar com -->
+        <div class="flex items-center gap-2 mt-2">
+          <span class="text-xs text-slate-500 whitespace-nowrap">Comparar com:</span>
+          <select id="compareSelect" class="text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white shadow-sm flex-1 min-w-0">
+            <option value="">— nenhum —</option>
+          </select>
+        </div>
+
         <div class="mt-3 flex items-center gap-3">
-          <img id="playerImg" class="w-12 h-12 rounded-2xl bg-slate-100 object-cover border border-slate-200" alt="foto" />
-          <div class="min-w-0">
-            <div id="playerName" class="font-semibold truncate">—</div>
+          <!-- Foto com iniciais como fallback -->
+          <div id="playerImgWrap" class="relative w-12 h-12 rounded-2xl flex-shrink-0 bg-slate-300 flex items-center justify-center overflow-hidden border border-slate-200">
+            <span id="playerImgInitials" class="text-white text-sm font-bold select-none"></span>
+            <img id="playerImg" class="absolute inset-0 w-full h-full object-cover z-10" alt="foto" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5">
+              <div id="playerName" class="font-semibold truncate">—</div>
+              <button id="shareBtn" class="hidden text-slate-400 hover:text-blue-500 flex-shrink-0" title="Compartilhar">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+              </button>
+            </div>
             <div class="text-xs text-slate-500" id="playerMeta">—</div>
           </div>
         </div>
@@ -151,6 +178,8 @@
       <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
         <div class="text-sm font-semibold text-slate-700">📋 Lista</div>
         <div class="text-xs text-slate-500">Toque em um nome para abrir o radar</div>
+        <input id="searchPlayers" type="search" placeholder="Buscar jogador..."
+          class="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white mt-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
         <div id="listPlayers" class="space-y-2 mt-3"></div>
       </div>
     </section>
@@ -168,5 +197,10 @@
   </nav>
 
   <script type="module" src="assets/js/app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js");
+    }
+  </script>
 </body>
 </html>

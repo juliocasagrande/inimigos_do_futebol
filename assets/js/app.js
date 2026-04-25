@@ -75,7 +75,7 @@ function isValidPlayer(p) {
     .map((x) => Number(x) || 0)
     .reduce((a, b) => a + b, 0);
 
-  // remove linha “fantasma”
+  // remove linha "fantasma"
   if (pres === 0 && gols === 0 && attrsSum === 0) return false;
   return true;
 }
@@ -727,12 +727,12 @@ function renderScatter(players) {
 /* ---------- RADAR ---------- */
 function radarCategories(p) {
   return [
-    { category: “Ritmo”,      value: Number(p.Ritmo || 0) },
-    { category: “Finalização”,value: Number(p.Finalizacao || 0) },
-    { category: “Passe”,      value: Number(p.Passe || 0) },
-    { category: “Drible”,     value: Number(p.Drible || 0) },
-    { category: “Defesa”,     value: Number(p.Defesa || 0) },
-    { category: “Físico”,     value: Number(p.Fisico || 0) },
+    { category: "Ritmo",      value: Number(p.Ritmo || 0) },
+    { category: "Finalização",value: Number(p.Finalizacao || 0) },
+    { category: "Passe",      value: Number(p.Passe || 0) },
+    { category: "Drible",     value: Number(p.Drible || 0) },
+    { category: "Defesa",     value: Number(p.Defesa || 0) },
+    { category: "Físico",     value: Number(p.Fisico || 0) },
   ];
 }
 
@@ -748,11 +748,11 @@ function renderRadar(p, p2 = null) {
     root.setThemes([am5themes_Animated.new(root)]);
 
     const chart = root.container.children.push(
-      am5radar.RadarChart.new(root, { panX: false, panY: false, wheelX: “none”, wheelY: “none”, innerRadius: am5.percent(20) })
+      am5radar.RadarChart.new(root, { panX: false, panY: false, wheelX: "none", wheelY: "none", innerRadius: am5.percent(20) })
     );
 
     const xAxis = chart.xAxes.push(
-      am5radar.CategoryAxis.new(root, { categoryField: “category”, renderer: am5radar.AxisRendererCircular.new(root, {}) })
+      am5radar.CategoryAxis.new(root, { categoryField: "category", renderer: am5radar.AxisRendererCircular.new(root, {}) })
     );
     xAxis.data.setAll(cats1);
 
@@ -764,8 +764,8 @@ function renderRadar(p, p2 = null) {
       const s = chart.series.push(
         am5radar.RadarLineSeries.new(root, {
           xAxis, yAxis,
-          valueYField: “value”,
-          categoryXField: “category”,
+          valueYField: "value",
+          categoryXField: "category",
           strokeWidth: 2,
           fillOpacity: 0.15,
           stroke: am5.color(color),
@@ -782,7 +782,7 @@ function renderRadar(p, p2 = null) {
 
     chart.appear(500, 40);
   } catch (e) {
-    console.error(“Radar error:”, e);
+    console.error("Radar error:", e);
     disposeChart(id);
     throw e;
   }
@@ -971,7 +971,7 @@ window.addEventListener("hashchange", () => {
 });
 
 elSeason.addEventListener("change", () => {
-  // temporada mudou: melhor descartar tudo para evitar roots “zumbis”
+  // temporada mudou: melhor descartar tudo para evitar roots "zumbis"
   disposeAllCharts();
   refreshAll();
 });
